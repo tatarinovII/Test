@@ -2,14 +2,20 @@
 
 name: Deploy Compose Web to GitHub Pages
 
-  # Запускать этот воркфлоу при каждом пуше в ветку 'main'
+# Запускать этот воркфлоу при каждом пуше в ветку 'main'
 on:
   push:
-    branches:
-      - main # Или ваша основная ветка, например, 'master'
+       branches:
+         - main # Или ваша основная ветка, например, 'master'
 
 jobs:
   build-and-deploy:
+    # ✅ ДОБАВЛЯЕМ ПРАВА ДОСТУПА ДЛЯ ДЕПЛОЯ
+    permissions:
+      contents: read
+      pages: write      # Разрешение на запись на GitHub Pages
+      id-token: write   # Разрешение на создание id-token для деплоя
+
     runs-on: ubuntu-latest # Использовать последнюю версию Ubuntu
 
     steps:
@@ -22,16 +28,15 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17' # ✅ ИСПРАВЛЕНО
+          java-version: '17'
 
       # 3. Делаем gradle wrapper исполняемым
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
       # 4. Собираем JS-версию приложения
-      #    Эта команда создаст готовую для деплоя сборку
       - name: Build with Gradle
-        run: ./gradlew :composeApp:jsBrowserDistribution --no-daemon # ✅ УЛУЧШЕНО
+        run: ./gradlew :composeApp:jsBrowserDistribution --no-daemon
 
       # 5. Настраиваем GitHub Pages
       - name: Setup Pages
