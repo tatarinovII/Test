@@ -1,13 +1,14 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalDistributionDsl
+
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
-}
+            alias(libs.plugins.kotlinMultiplatform)
+            alias(libs.plugins.androidApplication)
+            alias(libs.plugins.composeMultiplatform)
+            alias(libs.plugins.composeCompiler)
+        }
 
 kotlin {
     androidTarget {
@@ -15,39 +16,57 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
+    @OptIn(ExperimentalDistributionDsl::class)
     js(IR) {
-        browser() {
+        browser {
             distribution {
                 outputDirectory = File("$projectDir/build/distributions")
             }
         }
         binaries.executable()
     }
-    
+
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
         binaries.executable()
     }
-    
+
     sourceSets {
-        androidMain.dependencies {
-            implementation(compose.preview)
-            implementation(libs.androidx.activity.compose)
+        val commonMain by getting {
+            dependencies {
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material3)
+                implementation(compose.ui)
+                implementation(compose.components.resources)
+                implementation(compose.components.uiToolingPreview)
+                implementation(libs.androidx.lifecycle.viewmodelCompose)
+                implementation(libs.androidx.lifecycle.runtimeCompose)
+            }
         }
-        commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
+
+        val androidMain by getting {
+            dependsOn(commonMain) // Указываем зависимость
+            dependencies {
+                implementation(compose.preview)
+                implementation(libs.androidx.activity.compose)
+            }
         }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
+
+        val jsMain by getting {
+            dependsOn(commonMain) // Указываем зависимость
+        }
+
+        val wasmJsMain by getting {
+            dependsOn(commonMain) // Указываем зависимость
+        }
+
+        val commonTest by getting {
+            dependencies {
+                implementation(libs.kotlin.test)
+            }
         }
     }
 }
@@ -82,21 +101,3 @@ android {
 dependencies {
     debugImplementation(compose.uiTooling)
 }
-
-tasks.named("jsProcessResources") {
-    doLast {
-        val targetFile = File(project.buildDir, "processedResources/js/main/index.html")
-        if (targetFile.exists()) {
-            // Читаем содержимое файла
-            var text = targetFile.readText()
-            // Добавляем скрипт Telegram Web App перед закрывающим тегом </head>
-            text = text.replace(
-                "</head>",
-                "    <script src=\"https://telegram.org/js/telegram-web-app.js\"></script>\n</head>"
-            )
-            // Перезаписываем файл
-            targetFile.writeText(text)
-        }
-    }
-}
-

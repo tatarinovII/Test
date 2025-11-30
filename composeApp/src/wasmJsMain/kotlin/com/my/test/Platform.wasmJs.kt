@@ -5,3 +5,7 @@ class WasmPlatform: Platform {
 }
 
 actual fun getPlatform(): Platform = WasmPlatform()
+
+actual fun getTelegramUserName(): String? {
+    return null
+}
