@@ -1,0 +1,50 @@
+# .github/workflows/deploy.yml
+
+name: Deploy Compose Web to GitHub Pages
+
+# Запускать этот воркфлоу при каждом пуше в ветку 'main'
+on:
+  push:
+    branches:
+      - main # Или ваша основная ветка, например, 'master'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest # Использовать последнюю версию Ubuntu
+
+    steps:
+      # 1. Скачиваем код вашего репозитория
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Настраиваем Java (Gradle работает на Java)
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11' # Указана в вашем build.gradle.kts
+
+      # 3. Делаем gradle wrapper исполняемым
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # 4. Собираем JS-версию приложения
+      #    Эта команда создаст готовую для деплоя сборку
+      - name: Build with Gradle
+        run: ./gradlew :composeApp:jsBrowserDistribution
+
+      # 5. Настраиваем GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      # 6. Загружаем артефакты (результаты сборки)
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Папка, куда Gradle собрал наше приложение
+          path: ./composeApp/build/distributions/
+
+      # 7. Деплоим на GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
