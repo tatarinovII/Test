@@ -2,7 +2,7 @@
 
 name: Deploy Compose Web to GitHub Pages
 
-# Запускать этот воркфлоу при каждом пуше в ветку 'main'
+  # Запускать этот воркфлоу при каждом пуше в ветку 'main'
 on:
   push:
     branches:
@@ -22,7 +22,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '11' # Указана в вашем build.gradle.kts
+          java-version: '17' # ✅ ИСПРАВЛЕНО
 
       # 3. Делаем gradle wrapper исполняемым
       - name: Make gradlew executable
@@ -31,7 +31,7 @@ jobs:
       # 4. Собираем JS-версию приложения
       #    Эта команда создаст готовую для деплоя сборку
       - name: Build with Gradle
-        run: ./gradlew :composeApp:jsBrowserDistribution
+        run: ./gradlew :composeApp:jsBrowserDistribution --no-daemon # ✅ УЛУЧШЕНО
 
       # 5. Настраиваем GitHub Pages
       - name: Setup Pages
