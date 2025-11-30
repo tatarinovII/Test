@@ -18,12 +18,13 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 import test.composeapp.generated.resources.Res
 import test.composeapp.generated.resources.compose_multiplatform
-
+expect fun getTelegramUserName(): String?
 @Composable
 @Preview
 fun App() {
     MaterialTheme {
         var showContent by remember { mutableStateOf(false) }
+        val userName = getTelegramUserName()
         Column(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.primaryContainer)
@@ -31,6 +32,9 @@ fun App() {
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            if (userName != null) {
+                Text("Привет, $userName!")
+            }
             Button(onClick = { showContent = !showContent }) {
                 Text("Click me!")
             }

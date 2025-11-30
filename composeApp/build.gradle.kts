@@ -83,3 +83,20 @@ dependencies {
     debugImplementation(compose.uiTooling)
 }
 
+tasks.named("jsProcessResources") {
+    doLast {
+        val targetFile = File(project.buildDir, "processedResources/js/main/index.html")
+        if (targetFile.exists()) {
+            // Читаем содержимое файла
+            var text = targetFile.readText()
+            // Добавляем скрипт Telegram Web App перед закрывающим тегом </head>
+            text = text.replace(
+                "</head>",
+                "    <script src=\"https://telegram.org/js/telegram-web-app.js\"></script>\n</head>"
+            )
+            // Перезаписываем файл
+            targetFile.writeText(text)
+        }
+    }
+}
+
