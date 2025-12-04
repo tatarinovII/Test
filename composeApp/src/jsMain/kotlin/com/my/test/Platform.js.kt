@@ -6,6 +6,6 @@ class JsPlatform: Platform {
 
 actual fun getPlatform(): Platform = JsPlatform()
 
-actual fun getTelegramUserName(): String? {
+fun getTelegramUserName(): String? {
     return telegramWebApp?.initDataUnsafe?.user?.first_name
 }
